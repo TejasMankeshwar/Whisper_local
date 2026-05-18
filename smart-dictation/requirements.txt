@@ -1,0 +1,9 @@
+faster-whisper
+google-generativeai
+sounddevice
+numpy
+scipy
+fastapi
+uvicorn
+pynput
+pyperclip

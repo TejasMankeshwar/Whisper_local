@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="stylesheet" href="styles.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Smart Dictation</title>
+    <script type="module" src="/main.js" defer></script>
+  </head>
+  <body>
+    <div class="app-container">
+      <div class="header">
+        <h1>Smart Dictation</h1>
+        <div id="status-indicator" class="status idle">
+          <span class="dot"></span>
+          <span id="status-text">Idle</span>
+        </div>
+      </div>
+      
+      <div class="settings-card">
+        <div class="form-group">
+          <label for="api-key">Gemini API Key</label>
+          <input type="password" id="api-key" placeholder="Enter your API Key..." />
+        </div>
+        
+        <div class="form-group row">
+          <label for="auto-paste">Auto Paste (Cmd+V)</label>
+          <label class="switch">
+            <input type="checkbox" id="auto-paste" checked>
+            <span class="slider round"></span>
+          </label>
+        </div>
+        
+        <div class="form-group row">
+          <label for="shortcut">Toggle Shortcut</label>
+          <div class="kbd">⌥ + Space</div>
+        </div>
+
+        <button id="save-btn" class="primary-btn">Save Settings</button>
+      </div>
+
+      <div id="error-msg" class="error-msg hidden"></div>
+      
+      <div class="transcript-preview">
+        <h3>Last Transcript</h3>
+        <p id="transcript-text" class="placeholder-text">Press Option + Space to start recording...</p>
+      </div>
+    </div>
+  </body>
+</html>
