@@ -2,7 +2,7 @@ import { register, unregisterAll } from '@tauri-apps/plugin-global-shortcut';
 
 let isListening = false;
 let autoPaste = true;
-let apiKey = '';
+let apiKey = 'AIzaSyAVStrowVnyj5Vzl7SqNf6zUMpohKz9isE';
 
 const statusIndicator = document.getElementById('status-indicator');
 const statusText = document.getElementById('status-text');
@@ -31,7 +31,7 @@ function showError(msg) {
 async function saveSettings() {
   apiKey = apiKeyInput.value;
   autoPaste = autoPasteInput.checked;
-  
+
   try {
     const res = await fetch(`${API_BASE}/settings`, {
       method: 'POST',
@@ -59,7 +59,7 @@ async function toggleRecording() {
       if (res.ok) {
         isListening = true;
         updateStatus('listening');
-        transcriptText.textContent = 'Listening...';
+        transcriptText.value = 'Listening...';
         transcriptText.classList.add('placeholder-text');
       }
     } catch (err) {
@@ -69,21 +69,21 @@ async function toggleRecording() {
     // Stop Recording & Process
     isListening = false;
     updateStatus('processing');
-    transcriptText.textContent = 'Processing and cleaning...';
-    
+    transcriptText.value = 'Processing and cleaning...';
+
     try {
       const res = await fetch(`${API_BASE}/stop`, { method: 'POST' });
       const data = await res.json();
-      
+
       if (data.error) {
         showError(data.error);
         updateStatus('idle');
-        transcriptText.textContent = 'Error processing speech.';
+        transcriptText.value = 'Error processing speech.';
       } else {
         updateStatus('done');
-        transcriptText.textContent = data.text || '(No text detected)';
+        transcriptText.value = data.text || '(No text detected)';
         transcriptText.classList.remove('placeholder-text');
-        
+
         setTimeout(() => updateStatus('idle'), 3000);
       }
     } catch (err) {
@@ -97,7 +97,7 @@ async function setup() {
   // Load settings (In real app, we'd use tauri-plugin-store)
   const savedKey = localStorage.getItem('gemini_key') || '';
   const savedPaste = localStorage.getItem('auto_paste') !== 'false';
-  
+
   apiKeyInput.value = savedKey;
   autoPasteInput.checked = savedPaste;
   apiKey = savedKey;
@@ -108,6 +108,8 @@ async function setup() {
     localStorage.setItem('auto_paste', autoPasteInput.checked);
     saveSettings();
   });
+
+  statusIndicator.addEventListener('click', toggleRecording);
 
   // Register Global Shortcut
   try {
@@ -130,6 +132,13 @@ async function setup() {
       showError('Failed to register global shortcut Option+Space');
     }
   }
+
+  // Prevent Option+Space from inserting spaces in the webview
+  window.addEventListener('keydown', (e) => {
+    if (e.altKey && e.code === 'Space') {
+      e.preventDefault();
+    }
+  });
 
   // Initial settings sync
   if (apiKey) {

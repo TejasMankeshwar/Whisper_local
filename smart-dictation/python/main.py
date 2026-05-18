@@ -8,6 +8,8 @@ from transcriber import Transcriber
 from cleaner import Cleaner
 from clipboard import paste_text
 
+import json
+
 app = FastAPI()
 
 app.add_middleware(
@@ -18,9 +20,31 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+SETTINGS_FILE = os.path.join(os.path.dirname(__file__), "settings.json")
+
+def load_settings_file():
+    if os.path.exists(SETTINGS_FILE):
+        try:
+            with open(SETTINGS_FILE, "r") as f:
+                return json.load(f)
+        except Exception as e:
+            print(f"Error loading settings file: {e}")
+    return {}
+
+def save_settings_file(settings_dict):
+    try:
+        with open(SETTINGS_FILE, "w") as f:
+            json.dump(settings_dict, f, indent=4)
+    except Exception as e:
+        print(f"Error saving settings file: {e}")
+
+saved_settings = load_settings_file()
+saved_api_key = saved_settings.get("api_key", "")
+saved_auto_paste = saved_settings.get("auto_paste", True)
+
 recorder = AudioRecorder()
-transcriber = Transcriber(model_size="small.en")
-cleaner = Cleaner()
+transcriber = None  # Lazy loaded
+cleaner = Cleaner(api_key=saved_api_key)
 
 class Settings(BaseModel):
     api_key: str
@@ -29,7 +53,7 @@ class Settings(BaseModel):
 
 app_state = {
     "status": "idle", # idle, listening, processing, done, error
-    "auto_paste": True,
+    "auto_paste": saved_auto_paste,
 }
 
 @app.get("/status")
@@ -40,7 +64,11 @@ def get_status():
 def update_settings(settings: Settings):
     cleaner.update_api_key(settings.api_key)
     app_state["auto_paste"] = settings.auto_paste
-    # In a real app we'd save to config/settings.json here
+    save_settings_file({
+        "api_key": settings.api_key,
+        "auto_paste": settings.auto_paste,
+        "language": settings.language
+    })
     return {"status": "success"}
 
 @app.post("/start")
@@ -70,6 +98,11 @@ def stop_recording():
     
     try:
         # Transcribe
+        global transcriber
+        if transcriber is None:
+            print("Loading Whisper model (first time run, downloading if needed)...")
+            transcriber = Transcriber(model_size="small.en")
+            
         raw_text = transcriber.transcribe(audio_path)
         
         # Clean

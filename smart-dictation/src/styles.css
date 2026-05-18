@@ -51,6 +51,12 @@ h1 {
   padding: 4px 10px;
   border-radius: 12px;
   background-color: rgba(255, 255, 255, 0.05);
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.status:hover {
+  background-color: rgba(255, 255, 255, 0.1);
 }
 
 .status .dot {
@@ -206,11 +212,25 @@ input:checked + .slider:before {
   font-weight: 500;
 }
 
-.transcript-preview p {
-  margin: 0;
-  font-size: 0.95rem;
+.transcript-preview textarea {
+  width: 100%;
+  height: 120px;
+  background-color: var(--bg-color);
+  border: 1px solid var(--border);
+  color: var(--text-color);
+  padding: 10px;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 0.9rem;
   line-height: 1.4;
-  word-break: break-word;
+  resize: none;
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color 0.2s;
+}
+
+.transcript-preview textarea:focus {
+  border-color: var(--primary);
 }
 
 .placeholder-text {

@@ -4,7 +4,10 @@
   "version": "0.1.0",
   "identifier": "com.tejasmankeshwar.smart-dictation",
   "build": {
-    "frontendDist": "../src"
+    "beforeDevCommand": "npm run dev",
+    "beforeBuildCommand": "npm run build",
+    "frontendDist": "../dist",
+    "devUrl": "http://localhost:5173"
   },
   "app": {
     "withGlobalTauri": true,

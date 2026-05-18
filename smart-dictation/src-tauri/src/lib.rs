@@ -11,11 +11,7 @@ pub fn run() {
         .plugin(tauri_plugin_global_shortcut::Builder::new().build())
         .plugin(tauri_plugin_http::init())
         .plugin(tauri_plugin_opener::init())
-        .setup(|app| {
-            let _ = tauri_plugin_shell::ShellExt::shell(app)
-                .command("sh")
-                .args(["-c", "cd $PWD/.. && source venv/bin/activate && python python/main.py"])
-                .spawn();
+        .setup(|_app| {
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![greet])
