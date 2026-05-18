@@ -1,64 +1,78 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="stylesheet" href="styles.css" />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Smart Dictation</title>
-    <script type="module" src="/main.js" defer></script>
-  </head>
-  <body>
-    <div class="app-container">
-      <div class="header">
-        <h1>Smart Dictation</h1>
-        <div id="status-indicator" class="status idle">
-          <span class="dot"></span>
-          <span id="status-text">Idle</span>
-        </div>
-      </div>
-      
-      <div class="settings-card">
-        <div class="form-group">
-          <label for="ai-provider">AI Provider</label>
-          <select id="ai-provider">
-            <option value="gemini">Gemini API</option>
-            <option value="ollama">Local Ollama</option>
-          </select>
-        </div>
 
-        <div class="form-group" id="gemini-group">
-          <label for="api-key">Gemini API Key</label>
-          <input type="password" id="api-key" placeholder="Enter your API Key..." />
-        </div>
-        
-        <div class="form-group hidden" id="ollama-group">
-          <label for="ollama-model">Ollama Model</label>
-          <input type="text" id="ollama-model" placeholder="e.g. qwen:4b, llama3..." />
-        </div>
-        
-        <div class="form-group row">
-          <label for="auto-paste">Auto Paste (Cmd+V)</label>
-          <label class="switch">
-            <input type="checkbox" id="auto-paste" checked>
-            <span class="slider round"></span>
-          </label>
-        </div>
-        
-        <div class="form-group row">
-          <label for="shortcut">Toggle Shortcut</label>
-          <div class="kbd">⌥ + Space</div>
-        </div>
+<head>
+  <meta charset="UTF-8" />
+  <link rel="stylesheet" href="styles.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Smart Dictation</title>
+  <script type="module" src="/main.js" defer></script>
+</head>
 
-        <button id="save-btn" class="primary-btn">Save Settings</button>
-      </div>
-
-      <div id="error-msg" class="error-msg hidden"></div>
-      
-      <div class="transcript-preview">
-        <h3>Sandbox & Transcript Preview</h3>
-        <textarea id="transcript-text" placeholder="Press Option + Space to start recording, or type here to test..."></textarea>
+<body>
+  <div class="app-container">
+    <div class="header">
+      <h1>Smart Dictation</h1>
+      <div id="status-indicator" class="status idle">
+        <span class="dot"></span>
+        <span id="status-text">Idle</span>
       </div>
     </div>
-  </body>
+
+    <div class="settings-card">
+      <div class="form-group">
+        <label for="ai-provider">AI Provider</label>
+        <select id="ai-provider">
+          <option value="gemini">Gemini API</option>
+          <option value="ollama">Local Ollama</option>
+        </select>
+      </div>
+
+      <div class="form-group" id="gemini-group">
+        <label for="api-key">Gemini API Key</label>
+        <input type="password" id="api-key" placeholder="Enter your API Key..." />
+      </div>
+
+      <div class="form-group hidden" id="ollama-group">
+        <label for="ollama-model">Ollama Model</label>
+        <input type="text" id="ollama-model" placeholder="e.g. gemma3:1b, llama3..." />
+      </div>
+
+      <div class="form-group row">
+        <label for="auto-paste">Auto Paste (Cmd+V)</label>
+        <label class="switch">
+          <input type="checkbox" id="auto-paste" checked>
+          <span class="slider round"></span>
+        </label>
+      </div>
+
+      <div class="form-group row">
+        <label for="shortcut">Toggle Shortcut</label>
+        <div class="kbd">⌥ + Space</div>
+      </div>
+
+      <button id="save-btn" class="primary-btn">Save Settings</button>
+    </div>
+
+    <div id="error-msg" class="error-msg hidden"></div>
+
+    <div class="transcript-preview">
+      <h3>Sandbox & Transcript Preview</h3>
+      <div class="sandbox-split">
+        <div class="sandbox-column">
+          <label class="sandbox-label">Original Whisper Transcript</label>
+          <textarea id="raw-transcript-text" readonly
+            placeholder="Raw transcription from Whisper will appear here..."></textarea>
+        </div>
+        <div class="sandbox-column">
+          <label class="sandbox-label">AI Cleaned Text (Polished)</label>
+          <textarea id="transcript-text"
+            placeholder="AI polished output will appear here. You can also type here to test..."></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+
 </html>

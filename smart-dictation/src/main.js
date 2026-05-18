@@ -1,4 +1,6 @@
 import { register, unregisterAll } from '@tauri-apps/plugin-global-shortcut';
+import { invoke } from '@tauri-apps/api/core';
+import { listen } from '@tauri-apps/api/event';
 
 let isListening = false;
 let provider = 'gemini';
@@ -6,8 +8,12 @@ let apiKey = '';
 let ollamaModel = 'gemma3:1b';
 let autoPaste = true;
 
+let lastPressTime = 0;
+let pressTimeout = null;
+
 const statusIndicator = document.getElementById('status-indicator');
 const statusText = document.getElementById('status-text');
+const rawTranscriptText = document.getElementById('raw-transcript-text');
 const transcriptText = document.getElementById('transcript-text');
 const errorMsg = document.getElementById('error-msg');
 
@@ -68,8 +74,11 @@ async function toggleRecording() {
       const res = await fetch(`${API_BASE}/start`, { method: 'POST' });
       if (res.ok) {
         isListening = true;
+        invoke('sync_listening_state', { listening: true }).catch(console.error);
         updateStatus('listening');
+        rawTranscriptText.value = 'Listening...';
         transcriptText.value = 'Listening...';
+        rawTranscriptText.classList.add('placeholder-text');
         transcriptText.classList.add('placeholder-text');
       }
     } catch (err) {
@@ -78,7 +87,9 @@ async function toggleRecording() {
   } else {
     // Stop Recording & Process
     isListening = false;
+    invoke('sync_listening_state', { listening: false }).catch(console.error);
     updateStatus('processing');
+    rawTranscriptText.value = 'Transcribing voice...';
     transcriptText.value = 'Processing and cleaning...';
 
     try {
@@ -88,10 +99,13 @@ async function toggleRecording() {
       if (data.error) {
         showError(data.error);
         updateStatus('idle');
+        rawTranscriptText.value = 'Error processing speech.';
         transcriptText.value = 'Error processing speech.';
       } else {
         updateStatus('done');
+        rawTranscriptText.value = data.raw_text || '(No text detected)';
         transcriptText.value = data.text || '(No text detected)';
+        rawTranscriptText.classList.remove('placeholder-text');
         transcriptText.classList.remove('placeholder-text');
 
         setTimeout(() => updateStatus('idle'), 3000);
@@ -103,11 +117,40 @@ async function toggleRecording() {
   }
 }
 
+async function handleShortcutTrigger() {
+  const now = Date.now();
+  const timeDiff = now - lastPressTime;
+  lastPressTime = now;
+
+  if (isListening) {
+    // If already recording, a SINGLE press immediately stops it
+    if (pressTimeout) {
+      clearTimeout(pressTimeout);
+      pressTimeout = null;
+    }
+    await toggleRecording();
+  } else {
+    // If idle, a DOUBLE press starts recording
+    if (timeDiff < 400) { // 400ms double-press window
+      if (pressTimeout) {
+        clearTimeout(pressTimeout);
+        pressTimeout = null;
+      }
+      await toggleRecording();
+    } else {
+      // First press of potential double-press
+      pressTimeout = setTimeout(() => {
+        pressTimeout = null;
+      }, 400);
+    }
+  }
+}
+
 async function setup() {
   // Load settings (In real app, we'd use tauri-plugin-store)
   const savedProvider = localStorage.getItem('ai_provider') || 'gemini';
   const savedKey = localStorage.getItem('gemini_key') || '';
-  const savedModel = localStorage.getItem('ollama_model') || 'qwen3:4b';
+  const savedModel = localStorage.getItem('ollama_model') || 'gemma3:1b';
   const savedPaste = localStorage.getItem('auto_paste') !== 'false';
 
   aiProviderSelect.value = savedProvider;
@@ -147,12 +190,22 @@ async function setup() {
 
   statusIndicator.addEventListener('click', toggleRecording);
 
+  // Listen to native Fn/Globe key events from Rust
+  listen('fn-shortcut', (event) => {
+    console.log('Fn shortcut event received:', event.payload);
+    if (event.payload === 'start' && !isListening) {
+      toggleRecording();
+    } else if (event.payload === 'stop' && isListening) {
+      toggleRecording();
+    }
+  });
+
   // Register Global Shortcut
   try {
     await unregisterAll();
     await register('Option+Space', (event) => {
       if (event.state === 'Pressed') {
-        toggleRecording();
+        handleShortcutTrigger();
       }
     });
   } catch (err) {
@@ -161,7 +214,7 @@ async function setup() {
     try {
       await register('Alt+Space', (event) => {
         if (event.state === 'Pressed') {
-          toggleRecording();
+          handleShortcutTrigger();
         }
       });
     } catch (e) {
@@ -173,6 +226,7 @@ async function setup() {
   window.addEventListener('keydown', (e) => {
     if (e.altKey && e.code === 'Space') {
       e.preventDefault();
+      handleShortcutTrigger();
     }
   });
 

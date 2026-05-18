@@ -41,7 +41,7 @@ def save_settings_file(settings_dict):
 saved_settings = load_settings_file()
 saved_provider = saved_settings.get("provider", "gemini")
 saved_api_key = saved_settings.get("api_key", "")
-saved_ollama_model = saved_settings.get("ollama_model", "qwen:4b")
+saved_ollama_model = saved_settings.get("ollama_model", "gemma3:1b")
 saved_auto_paste = saved_settings.get("auto_paste", True)
 
 recorder = AudioRecorder()
@@ -131,7 +131,10 @@ def stop_recording():
         if os.path.exists(audio_path):
             os.remove(audio_path)
             
-        return {"text": clean_text}
+        return {
+            "text": clean_text,
+            "raw_text": raw_text
+        }
         
     except Exception as e:
         app_state["status"] = "error"

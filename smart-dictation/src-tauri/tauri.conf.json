@@ -14,9 +14,9 @@
     "windows": [
       {
         "title": "Smart Dictation",
-        "width": 320,
-        "height": 450,
-        "resizable": false,
+        "width": 750,
+        "height": 580,
+        "resizable": true,
         "fullscreen": false
       }
     ],
