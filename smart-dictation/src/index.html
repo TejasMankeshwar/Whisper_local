@@ -20,8 +20,21 @@
       
       <div class="settings-card">
         <div class="form-group">
+          <label for="ai-provider">AI Provider</label>
+          <select id="ai-provider">
+            <option value="gemini">Gemini API</option>
+            <option value="ollama">Local Ollama</option>
+          </select>
+        </div>
+
+        <div class="form-group" id="gemini-group">
           <label for="api-key">Gemini API Key</label>
           <input type="password" id="api-key" placeholder="Enter your API Key..." />
+        </div>
+        
+        <div class="form-group hidden" id="ollama-group">
+          <label for="ollama-model">Ollama Model</label>
+          <input type="text" id="ollama-model" placeholder="e.g. qwen:4b, llama3..." />
         </div>
         
         <div class="form-group row">

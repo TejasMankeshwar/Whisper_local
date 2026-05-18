@@ -1,5 +1,7 @@
 {
-    "api_key": "AIzaSyAVStrowVnyj5Vzl7SqNf6zUMpohKz9isE",
+    "provider": "ollama",
+    "api_key": "AIzaSyCWPy551aaTu0D2-SUqlni7bbRWKck8erU",
+    "ollama_model": "gemma3:1b",
     "auto_paste": true,
     "language": "en"
 }

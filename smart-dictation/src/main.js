@@ -1,15 +1,21 @@
 import { register, unregisterAll } from '@tauri-apps/plugin-global-shortcut';
 
 let isListening = false;
+let provider = 'gemini';
+let apiKey = '';
+let ollamaModel = 'gemma3:1b';
 let autoPaste = true;
-let apiKey = 'AIzaSyAVStrowVnyj5Vzl7SqNf6zUMpohKz9isE';
 
 const statusIndicator = document.getElementById('status-indicator');
 const statusText = document.getElementById('status-text');
 const transcriptText = document.getElementById('transcript-text');
 const errorMsg = document.getElementById('error-msg');
 
+const aiProviderSelect = document.getElementById('ai-provider');
+const geminiGroup = document.getElementById('gemini-group');
+const ollamaGroup = document.getElementById('ollama-group');
 const apiKeyInput = document.getElementById('api-key');
+const ollamaModelInput = document.getElementById('ollama-model');
 const autoPasteInput = document.getElementById('auto-paste');
 const saveBtn = document.getElementById('save-btn');
 
@@ -29,7 +35,9 @@ function showError(msg) {
 }
 
 async function saveSettings() {
+  provider = aiProviderSelect.value;
   apiKey = apiKeyInput.value;
+  ollamaModel = ollamaModelInput.value;
   autoPaste = autoPasteInput.checked;
 
   try {
@@ -37,7 +45,9 @@ async function saveSettings() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
+        provider: provider,
         api_key: apiKey,
+        ollama_model: ollamaModel,
         auto_paste: autoPaste,
         language: 'en'
       })
@@ -95,16 +105,42 @@ async function toggleRecording() {
 
 async function setup() {
   // Load settings (In real app, we'd use tauri-plugin-store)
+  const savedProvider = localStorage.getItem('ai_provider') || 'gemini';
   const savedKey = localStorage.getItem('gemini_key') || '';
+  const savedModel = localStorage.getItem('ollama_model') || 'qwen3:4b';
   const savedPaste = localStorage.getItem('auto_paste') !== 'false';
 
+  aiProviderSelect.value = savedProvider;
   apiKeyInput.value = savedKey;
+  ollamaModelInput.value = savedModel;
   autoPasteInput.checked = savedPaste;
+
+  provider = savedProvider;
   apiKey = savedKey;
+  ollamaModel = savedModel;
   autoPaste = savedPaste;
 
+  function updateUIForProvider(p) {
+    if (p === 'ollama') {
+      geminiGroup.classList.add('hidden');
+      ollamaGroup.classList.remove('hidden');
+    } else {
+      geminiGroup.classList.remove('hidden');
+      ollamaGroup.classList.add('hidden');
+    }
+  }
+
+  // Update UI immediately based on initial value
+  updateUIForProvider(provider);
+
+  aiProviderSelect.addEventListener('change', (e) => {
+    updateUIForProvider(e.target.value);
+  });
+
   saveBtn.addEventListener('click', () => {
+    localStorage.setItem('ai_provider', aiProviderSelect.value);
     localStorage.setItem('gemini_key', apiKeyInput.value);
+    localStorage.setItem('ollama_model', ollamaModelInput.value);
     localStorage.setItem('auto_paste', autoPasteInput.checked);
     saveSettings();
   });
@@ -141,9 +177,7 @@ async function setup() {
   });
 
   // Initial settings sync
-  if (apiKey) {
-    saveSettings();
-  }
+  saveSettings();
 }
 
 window.addEventListener('DOMContentLoaded', setup);

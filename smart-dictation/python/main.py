@@ -39,15 +39,19 @@ def save_settings_file(settings_dict):
         print(f"Error saving settings file: {e}")
 
 saved_settings = load_settings_file()
+saved_provider = saved_settings.get("provider", "gemini")
 saved_api_key = saved_settings.get("api_key", "")
+saved_ollama_model = saved_settings.get("ollama_model", "qwen:4b")
 saved_auto_paste = saved_settings.get("auto_paste", True)
 
 recorder = AudioRecorder()
 transcriber = None  # Lazy loaded
-cleaner = Cleaner(api_key=saved_api_key)
+cleaner = Cleaner(provider=saved_provider, api_key=saved_api_key, ollama_model=saved_ollama_model)
 
 class Settings(BaseModel):
+    provider: str
     api_key: str
+    ollama_model: str
     auto_paste: bool
     language: str
 
@@ -62,10 +66,16 @@ def get_status():
 
 @app.post("/settings")
 def update_settings(settings: Settings):
-    cleaner.update_api_key(settings.api_key)
+    cleaner.update_settings(
+        provider=settings.provider,
+        api_key=settings.api_key,
+        ollama_model=settings.ollama_model
+    )
     app_state["auto_paste"] = settings.auto_paste
     save_settings_file({
+        "provider": settings.provider,
         "api_key": settings.api_key,
+        "ollama_model": settings.ollama_model,
         "auto_paste": settings.auto_paste,
         "language": settings.language
     })
