@@ -1,6 +1,6 @@
 {
     "provider": "gemini",
-    "api_key": "AIzaSyCFa_MQxIFtyrhYuPhd2d4Ca0mEZ5FGRfs",
+    "api_key": "AIzaSyDOecDe8cYHk17zwh8YHxk-IrkcRh6RSdc",
     "ollama_model": "gemma3:1b",
     "auto_paste": true,
     "language": "en"
